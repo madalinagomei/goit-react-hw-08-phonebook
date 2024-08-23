@@ -1,0 +1,18 @@
+.link {
+  font-weight: 600;
+  font-size: 12px;
+}
+.link:hover,
+.link:active,
+.link:focus,
+.link:visited {
+  color: rgb(8, 80, 64);
+}
+.btn {
+  background-color: rgb(17, 151, 122);
+  transition: background-color 0.2s ease-in-out;
+}
+.btn:hover,
+.btn:active {
+  background-color: rgb(11, 108, 87);
+}

@@ -1,47 +1,100 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './ContactForm.module.css';
-import { useDispatch } from 'react-redux';
-import { nanoid } from '@reduxjs/toolkit';
-import { addContact } from '../../redux/operations';
+import { useDispatch, useSelector } from "react-redux";
+import { addContacts } from '../../redux/contacts/operations';
+import Notiflix from 'notiflix';
+import { selectContacts } from '../../redux/contacts/selectors';
+import { nanoid } from 'nanoid';
 
-const ContactForm = () => {
+Notiflix.Notify.init({
+  width: '280px',
+  position: 'center-center',
+  distance: '10px',
+  opacity: 1,
+});
+
+function ContactForm() {
+  const contacts = useSelector(selectContacts);
   const dispatch = useDispatch();
+  const [formData, setFormData] = useState({ name: '', number: '' });
 
-  const handleContact = e => {
+  const handleSubmit = e => {
     e.preventDefault();
+    if (!isFormValid()) {
+      Notiflix.Notify.failure("Please fill in both name and number fields!");
+      return;
+    }
 
     const newContact = {
       id: nanoid(),
-      name: e.target.elements.name.value,
-      phone: e.target.elements.phone.value,
+      name: formData.name,
+      number: formData.number,
     };
-    dispatch(addContact(newContact));
-    e.target.reset();
+
+    handleAddContacts(newContact);
+    setFormData({ name: '', number: '' });
   };
 
+  const handleInputChange = e => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleAddContacts = newContact => {
+    const existingContactByName = contacts.find(contact => contact.name === newContact.name);
+    const existingContactByNumber = contacts.find(contact => contact.number === newContact.number);
+
+    if (existingContactByName) {
+      Notiflix.Notify.failure(`${newContact.name} is already in contacts!`);
+    } else if (existingContactByNumber) {
+      Notiflix.Notify.failure(`Number ${newContact.number} is already in contacts!`);
+    } else {
+      dispatch(addContacts({ name: newContact.name, number: newContact.number }));
+      Notiflix.Notify.success(`${newContact.name} has been added to contacts!`);
+    }
+  };
+
+  const isFormValid = () => {
+    const { name, number } = formData;
+    return name.trim() !== '' && number.trim() !== '';
+  };
+
+  const { name, number } = formData;
+
   return (
-    <form onSubmit={handleContact} className={styles.wrapper}>
-      <h3>Name</h3>
-      <input
-        type="text"
-        name="name"
-        pattern="^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$"
-        title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-        required
-      />
-      <h3>Number</h3>
-      <input
-        type="tel"
-        name="phone"
-        title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-        required
-        pattern="\+?\d{1,4}?[\-.\s]?\(?\d{1,3}?\)?[\-.\s]?\d{1,4}[\-.\s]?\d{1,4}[\-.\s]?\d{1,9}"
-      />
-      <button type="submit" className={styles.addButton}>
-        Add
-      </button>
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <label className={styles.labelName}> Name:
+        <input
+          className={styles.formInput}
+          type="text"
+          name="name"
+          value={name}
+          onChange={handleInputChange}
+          placeholder='Name'
+          pattern="^[a-zA-Z]+(([' \-][a-zA-Z ])?[a-zA-Z]*)*$"
+          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+          required
+        />
+      </label>
+      <label className={styles.labelPhone}> Number:
+        <input
+          className={styles.formInput}
+          type="tel"
+          name="number"
+          value={number}
+          onChange={handleInputChange}
+          placeholder='Phone number'
+          pattern="\+?\d{1,4}?[[\-.\s]]?\(?\d{1,3}?\)?[[\-.\s]]?\d{1,4}[[\-.\s]]?\d{1,4}[[\-.\s]]?\d{1,9}"
+          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+          required
+        />
+      </label>
+      <button type="submit" className={styles.btnSubmit} disabled={!isFormValid()}>Add contact</button>
     </form>
   );
-};
+}
 
 export default ContactForm;
