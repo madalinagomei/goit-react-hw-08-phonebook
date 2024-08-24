@@ -1,23 +1,26 @@
-import { useAuth } from "hooks";
-import React from "react";
-import { useDispatch } from "react-redux";
-import { logOut } from "../../redux/auth/operations";
-import style from './UserMenu.module.css';
-import { IoIosLogOut } from "react-icons/io";
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { logOut } from '../../redux/auth/operations';
+import { selectUser } from '../../redux/auth/selector';
+import { Flex, Button, Text } from '@chakra-ui/react';
 
 const UserMenu = () => {
-    const dispatch = useDispatch();
-    const { user } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const [isLoading, setIsLoading] = useState(false);
 
-    return (
-        <div className={style.wrapper}>
-            <p className={style.userName}>Welcome, <span className={style.name}>{user.name}</span></p>
-            <button className={style.btnLogout} type="button" onClick={() => dispatch(logOut())}>
-                <span>Log Out</span>
-                <span><IoIosLogOut /></span>
-            </button>
-        </div>
-    );
-}
+  const hendlerLogOut = () => {
+    setIsLoading(true);
+    dispatch(logOut()).then(() => setIsLoading(false));
+  };
 
+  return (
+    <Flex gap="20px" justify="cente" align="center">
+      <Text fontSize="2xl">Hello, {user.name}</Text>
+      <Button onClick={hendlerLogOut} variant="changeBg" isLoading={isLoading}>
+        LogOut
+      </Button>
+    </Flex>
+  );
+};
 export default UserMenu;

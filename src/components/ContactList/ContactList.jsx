@@ -1,54 +1,44 @@
-import styles from './ContactList.module.css';
-import { useSelector, useDispatch } from 'react-redux';
+import css from './ContactList.module.css';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  getFilteredContacts,
   selectContacts,
-} from '../../redux/contacts/selectors';
-import { deleteContacts } from '../../redux/contacts/operations';
-import Avatar from 'react-avatar';
+  selectVisibleContacts,
+} from '../../redux/contacts/selector';
+import { deleteContact } from '../../redux/contacts/operations';
+import Loader from 'components/Loader/Loader';
 
-function ContactList() {
+const ContactList = () => {
   const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
-  const filtredContacts = useSelector(getFilteredContacts);
 
-  const filtered = Array.isArray(contacts) ? filtredContacts : [];
+  const contactsList = useSelector(selectVisibleContacts);
+  const { items, isLoading, error } = useSelector(selectContacts);
 
-  if (!Array.isArray(contacts)) {
-    console.error('Contacts is not an array:', contacts);
-    return null;
-  }
+  return isLoading && !error ? (
+    <Loader padding={5} size="md" /> //props to set the size of the spinner and the vertical padding of the container
+  ) : (
+    <ul className={css.list}>
+      {items &&
+        contactsList.map(contact => {
+          const { id, name, number } = contact;
+          return (
+            <li className={css.item} key={id}>
+              <p>
+                {name}: {number}
+              </p>
 
-  return (
-    <div className={styles.containerContacts}>
-      <h3 className={styles.titleContact}>Contact List:</h3>
-      <ul className={styles.itemsContact}>
-        {filtered.map(contact => (
-          <li key={contact.id} className={styles.itemContact}>
-            <div className={styles.wrapperContact}>
-              <Avatar
-                name={contact.name}
-                size="25"
-                round={true}
-                color="rgb(17, 151, 122)"
-                textSizeRatio={2.3}
-                style={{ marginRight: '5px' }}
-              />
-              <span className={styles.contactName}>{`${contact.name}`}</span> :{' '}
-              {contact.number}
-            </div>
-            <div className={styles.containerBtnDel}>
               <button
-                className={styles.btnDelete}
-                onClick={() => dispatch(deleteContacts(contact.id))}
+                type="button"
+                onClick={() => {
+                  dispatch(deleteContact(id));
+                }}
               >
                 Delete
               </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+            </li>
+          );
+        })}
+    </ul>
   );
-}
+};
+
 export default ContactList;

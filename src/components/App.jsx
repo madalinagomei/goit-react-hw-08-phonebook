@@ -1,45 +1,58 @@
+import { lazy, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import styles from './App.module.css';
-import { lazy, Suspense, useEffect } from 'react';
-import Navigation from "./Navigation/Navigation";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { refreshUser } from '../redux/auth/operations';
-import { useAuth } from '../hooks/useAuth';
-import { PrivateRoute } from './PrivateRoute';
+import { selectIsRefreshing } from '../redux/auth/selector';
 import { RestrictedRoute } from './RestrictedRoute';
-// Lazy-loaded components
-const Home = lazy(() => import('../pages/Home/Home'));
-const Register = lazy(() => import('pages/Register/Register'));
-const Login = lazy(() => import('pages/Login/Login'));
-const ResetPasswordPage = lazy(() => import('pages/ResetPass/ResetPassword'));
-const Contacts = lazy(() => import('pages/Contacts/Contacts'));
+import { PrivateRoute } from './PrivateRoute';
+import SharedLayout from './SharedLayout/SharedLayout';
+import NotFound from './NotFound/NotFound';
+
+const HomePage = lazy(() => import('pages/HomePage'));
+const RegisterPage = lazy(() => import('pages/RegisterPage'));
+const LoginPage = lazy(() => import('pages/LoginPage'));
+const ContactsPage = lazy(() => import('pages/ContactsPage'));
 
 export const App = () => {
-    const dispatch = useDispatch();
-    const { isRefreshing } = useAuth();
+  const dispatch = useDispatch();
+  const isRefreshing = useSelector(selectIsRefreshing);
 
-    useEffect(() => {
-        dispatch(refreshUser());
-    }, [dispatch]);
+  useEffect(() => {
+    dispatch(refreshUser());
+  }, [dispatch]);
 
-    return (
-        <main className={styles.mainApp}>
-            <Navigation />
-            {isRefreshing ? (
-                <b>Refreshing user...</b>
-            ) : (
-                <div className={styles.content}>
-                    <Suspense fallback={<div>Loading...</div>}>
-                        <Routes>
-                            <Route path='/' element={<Home />} />
-                            <Route path='/login' element={<RestrictedRoute redirectTo='/contacts' component={<Login />} />} />
-                            <Route path='/contacts' element={<PrivateRoute redirectTo='/login' component={<Contacts />} />} />
-                            <Route path='/register' element={<RestrictedRoute redirectTo='/contacts' component={<Register />} />} />
-                            <Route path='/password' element={<RestrictedRoute redirectTo='/contacts' component={<ResetPasswordPage />} />} />
-                        </Routes>
-                    </Suspense>
-                </div>
-            )}
-        </main>
-    );
+  return (
+    !isRefreshing && (
+      <Routes>
+        <Route path="/" element={<SharedLayout />}>
+          <Route index element={<HomePage />} />
+          <Route
+            path="/register"
+            element={
+              <RestrictedRoute
+                redirectTo="/contacts"
+                component={<RegisterPage />}
+              />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RestrictedRoute
+                redirectTo="/contacts"
+                component={<LoginPage />}
+              />
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <PrivateRoute redirectTo="/login" component={<ContactsPage />} />
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    )
+  );
 };
