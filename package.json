@@ -1,5 +1,5 @@
 {
-  "name": "hw-08-phonebook",
+  "name": "goit-react-hw-08-phonebook",
   "version": "0.1.0",
   "private": true,
   "proxy": "https://connections-api.goit.global",
