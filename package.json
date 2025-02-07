@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "proxy": "https://connections-api.goit.global",
-  "homepage": "https://madalinagomei.github.io/goit-react-hw-08-phonebook/",
+  "homepage": "https://madalinagomei.github.io/goit-react-hw-08-phonebook",
   "dependencies": {
     "@chakra-ui/provider": "^2.4.2",
     "@chakra-ui/react": "^2.8.2",
